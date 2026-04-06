@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta property="og:title" content="Території">
+    <meta property="og:description" content="Карта для проповідування">
+    
+    <meta http-equiv="Expires" content="0">
+    
+    <title>Території для Проповідування</title>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+
+
+    <script src="assets/dexie.js"></script>
+    <script src="assets/mapbox-gl.js"></script>
+    <link href="assets/mapbox-gl.css" rel='stylesheet' />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link rel="stylesheet" href="style.css?v=1.0.2">
+
+    <style>
+
+        #sync-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 3000;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .online { color: #4CAF50; }
+        .offline { color: #f44336; }
+
+        /* Швидкі кнопки маркування (Офлайн-панель) */
+        #marker-tools {
+            position: fixed;
+            bottom: 80px;
+            left: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .tool-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            font-size: 22px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .tool-btn.active {
+            outline: 3px solid #7b4c7c;
+            transform: scale(1.1);
+        }
+
+        /* Стилі для адмін-панелі (додано для кращого вигляду на мобільних) */
+        #admin-panel {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+            width: 90%;
+            max-width: 350px;
+            box-sizing: border-box;
+        }
+        #admin-panel h3 { margin-top: 0; text-align: center; color: #333; }
+        #admin-panel input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px; /* Запобігає зуму на iOS */
+        }
+        #admin-panel .admin-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        #admin-panel button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-login { background: #7b4c7c; color: white; }
+        .btn-cancel { background: #eee; color: #333; }
+
+        #show-login-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        #show-login-btn:active { transform: scale(0.9); }
+    </style>
+</head>
+<body>
+
+<div id="sync-indicator" class="online">
+    <span id="sync-dot">●</span> <span id="sync-text">Онлайн</span>
+</div>
+
+<div id="marker-tools"></div>
+
+    <div id="admin-panel">
+        <h3>Вхід для адміна</h3>
+        <input type="email" id="admin-email" placeholder="Ваш Email">
+        <input type="password" id="admin-password" placeholder="Пароль">
+        <div class="admin-buttons">
+            <button class="btn-login" onclick="loginAdmin()">Увійти</button>
+            <button class="btn-cancel" onclick="document.getElementById('admin-panel').style.display='none'">❌</button>
+        </div>
+    </div>
+
+    <button id="show-login-btn">🔑</button>
+
+    <div class="main-container">
+        <div id="towns-sidebar" class="sidebar collapsed">
+            <div class="sidebar-header">
+                <span>Населені пункти</span>
+                <button id="close-sidebar" class="toggle-btn-inline">×</button>
+            </div>
+            <div id="towns-list"></div>
+        </div>
+
+        <div class="content-area">
+            <div class="top-controls">
+                <button id="open-sidebar" class="toggle-btn">☰</button>
+                
+                <div class="search-container">
+                    <div class="search-instruction">Назва пункту або номер території</div>
+                    <input type="text" id="location-search" placeholder="Наприклад: Антонівка або 1">
+                    <div id="search-results"></div>
+                </div>
+            </div>
+
+            <div id="map"></div>
+            
+            <button id="shareBtn" class="ui-button">Поділитись посиланням</button>
+        </div>
+    </div>
+
+    <script src="js/supabase-logic.js?v=1.0.2"></script>
+    <script src="script.js?v=1.0.2"></script>
+
+    <script>
+    // Глобальна назва села для кнопки "Поділитись"
+    window.currentTownName = "Вибрана ділянка"; 
+
+// Моніторинг статусу мережі для користувача
+
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+    function updateNetworkStatus() {
+        const indicator = document.getElementById('sync-indicator');
+        const text = document.getElementById('sync-text');
+        if (navigator.onLine) {
+            indicator.className = 'online';
+            text.innerText = 'Онлайн';
+            // Виклик функції синхронізації, якщо вона є в script.js
+            if (window.syncOfflineData) window.syncOfflineData();
+        } else {
+            indicator.className = 'offline';
+            text.innerText = 'Офлайн режим';
+        }
+    }
+
+    // Логіка кнопки "Поділитись"
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+        const shareData = {
+            title: "Карта територій",
+            text: `Зручна карта для проповідування в н.п. ${window.currentTownName}`,
+            url: window.location.href 
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                alert('Посилання скопійовано в буфер обміну!');
+            }
+        } catch (err) {
+            console.error('Помилка при поширенні:', err);
+        }
+    });
+
+    // УВАГА: Ми НЕ додаємо addEventListener для #show-login-btn тут, 
+    // тому що функція checkAuthStatus() у supabase-logic.js 
+    // сама призначає правильну дію для цієї кнопки (вхід або вихід).
+</script>
+</body>
+</html>

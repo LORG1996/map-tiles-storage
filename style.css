@@ -1,0 +1,337 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap');
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    height: -webkit-fill-available; /* Виправлення для мобільних браузерів */
+    font-family: 'Noto Sans', sans-serif;
+    overflow: hidden;
+}
+
+.main-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    height: -webkit-fill-available; /* Виправлення для мобільних браузерів */
+    position: relative;
+}
+
+/* --- САЙДБАР --- */
+.sidebar {
+    width: 280px; /* Трохи ширше для зручності */
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2000;
+    flex-shrink: 0;
+}
+
+.sidebar.collapsed {
+    transform: translateX(-100%);
+    position: absolute; /* Виводимо з потоку при закритті */
+}
+
+.sidebar-header {
+    padding: 20px;
+    background: #7b4c7c;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.toggle-btn-inline {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+
+/* Список з прокруткою */
+#towns-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px 0 100px 0; /* Додаємо 100px знизу (внутрішній відступ) */
+    -webkit-overflow-scrolling: touch;
+}
+
+#towns-list::-webkit-scrollbar { width: 6px; }
+#towns-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+.town-item {
+    padding: 14px 20px;
+    margin: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    color: #333;
+}
+
+.town-item:hover { background: #f4f0f4; color: #7b4c7c; }
+.town-item::before { content: "📍"; margin-right: 12px; }
+
+/* --- ОСНОВНА ОБЛАСТЬ КАРТИ --- */
+.content-area {
+    flex-grow: 1;
+    position: relative;
+    height: 100%;
+    z-index: 1;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* --- ВЕРХНЯ ПАНЕЛЬ (КНОПКА + ПОШУК) --- */
+.top-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 1500;
+    display: flex;
+    /* Вирівнюємо по нижньому краю, щоб інпут і кнопка були на одній лінії */
+    align-items: flex-end; 
+    gap: 10px;
+    pointer-events: none;
+}
+
+.top-controls > * {
+    pointer-events: auto; /* Повертаємо клікабельність кнопкам та інпуту */
+}
+
+/* Кнопка відкриття ☰ */
+.toggle-btn {
+    pointer-events: auto;
+    /* Висота кнопки МАЄ БУТИ ТАКОЮ Ж, як у інпуту (#location-search) */
+    width: 50px;
+    height: 50px; 
+    background: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    /* Прибираємо зайві відступи, якщо вони були */
+    margin: 0; 
+}
+
+/* Контейнер пошуку */
+.search-container {
+    flex-grow: 1;
+    max-width: 400px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Відступ між інструкцією та інпутом */
+}
+
+.search-instruction {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); /* Тінь, щоб текст було видно на супутнику */
+    padding-left: 5px;
+    pointer-events: none; /* Текст не заважає клікам */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+
+
+#location-search {
+    width: 100%;
+    height: 50px;
+    padding: 0 15px;
+    border: none;
+    border-radius: 12px;
+    background: white;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    outline: none;
+    box-sizing: border-box;
+}
+
+#search-results {
+    position: absolute;
+    top: 55px;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: none;
+    z-index: 1600;
+}
+
+.search-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-item:hover { background: #f9f5f9; }
+
+/* --- КНОПКИ КАРТИ ТА ЕКРАНА --- */
+.ui-button {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: #7b4c7c;
+    color: white;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    white-space: nowrap;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.ui-button:active { transform: translateX(-50%) scale(0.95); }
+
+/* --- КНОПКИ MAPBOX --- */
+.mapboxgl-ctrl-top-right {
+    top: 80px !important; /* Опускаємо під рядок пошуку */
+    right: 15px !important;
+}
+
+.mapboxgl-ctrl-group {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* --- АДАПТИВНІСТЬ --- */
+@media (max-width: 768px) {
+    .sidebar { 
+        width: 50%; /* На мобільних сайдбар ширший */
+        position: absolute; 
+    }
+    
+    .top-controls {
+        left: 10px;
+        right: 10px;
+        top: 10px;
+    }
+
+    .search-container {
+        max-width: none; /* Пошук займає весь доступний простір */
+    }
+
+    /* Якщо сайдбар відкритий, ховаємо контроли карти */
+    .sidebar:not(.collapsed) ~ .content-area .mapboxgl-ctrl-top-right,
+    .sidebar:not(.collapsed) ~ .content-area #shareBtn {
+        display: none !important;
+    }
+
+    .search-instruction {
+        font-size: 10px;
+        line-height: 1.2;
+    }
+}
+
+.hidden { display: none !important; }
+
+.mapboxgl-popup-content { padding: 15px; border-radius: 8px; }
+
+/* Підсвітка кнопок при натисканні */
+.mapboxgl-popup-content button:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+}
+
+.mapboxgl-popup-close-button {
+    font-size: 24px;    /* Розмір самого символу Х */
+    padding: 8px 12px;  /* Відступи навколо, щоб легше було влучити пальцем */
+    color: #ff4d4d;     /* Можна змінити колір на червоний для помітності */
+    outline: none;      /* Прибираємо синю рамку при натисканні */
+}
+
+/* Зміна кольору при наведенні (для десктопів) */
+.mapboxgl-popup-close-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #cc0000;
+}
+
+/* Стиль для емодзі на карті */
+.emoji-marker {
+    /* Вимикаємо будь-які затримки в позиціюванні */
+    transition: none !important;
+    animation: none !important;
+    
+    /* Допомагає браузеру рендерити елемент швидше */
+    will-change: transform;
+    
+    /* Забороняємо виділення тексту навколо емодзі */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Якщо у тебе були анімації в попапах, їх теж краще спростити */
+.mapboxgl-popup {
+    transition: none !important;
+}
+
+.emoji-marker:hover {
+    transform: scale(1.2);
+}
+
+#map-style-toggle {
+    position: absolute;
+    top: 250px; /* Під кнопками зуму Mapbox */
+    right: 20px;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Приховати логотип Mapbox */
+.mapboxgl-ctrl-logo {
+    display: none !important;
+}
+
+/* Приховати текст копірайтів */
+.mapboxgl-ctrl-attrib {
+    display: none !important;
+}
+
+/* Зробити іконку (i) компактною, якщо ти її залишив */
+.mapboxgl-ctrl-attrib.mapboxgl-compact {
+    margin: 10px;
+    border-radius: 50%;
+}

@@ -1,3 +1,0 @@
-import{Bc as e,Pl as t,Vc as n}from"./index-BWQv8qGT.js";var r,i,a;t((()=>{n(),r=`oitFinalSimpleBlendPixelShader`,i=`var uFrontColor: texture_2d<f32>;@fragment
-fn main(input: FragmentInputs)->FragmentOutputs {var fragCoord: vec2i=vec2i(fragmentInputs.position.xy);var frontColor: vec4f=textureLoad(uFrontColor,fragCoord,0);fragmentOutputs.color=frontColor;}
-`,e.ShadersStoreWGSL[r]||(e.ShadersStoreWGSL[r]=i),a={name:r,shader:i}}))();export{a as oitFinalSimpleBlendPixelShaderWGSL};

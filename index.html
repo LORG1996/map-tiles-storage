@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Chilipad 3D View</title>
+    <title>Forest exterior</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,23 +16,23 @@
             width: 100%;
             height: 100%;
             font-family: 'Poppins', sans-serif;
-            background-color: #ffffff; /* Темний бекграунд пасує до Clay режиму */
+            background-color: #ffffff; 
             overflow: hidden;
         }
         
-        /* ГОЛОВНИЙ КОНТЕЙНЕР */
+        /* MAIN CONTAINER */
         .hero-container {
             position: relative;
             width: 100%;
             height: 100vh;
             display: flex;
-            align-items: center; 
-            padding: 0 10%;
-            
+            align-items: flex-end; /* Lower content to the bottom */
+            justify-content: center; /* Center horizontally - FIX: was flex-center */
+            padding: 0 60px 60px 60px; /* Large padding for desktop (bottom and sides) */
             box-sizing: border-box;
         }
 
-        /* 3D Canvas (Самий низ) */
+        /* 3D Canvas (Very bottom layer) */
         #product-3d-canvas {
             position: absolute;
             top: 0;
@@ -43,30 +43,29 @@
             display: block;
         }
 
-        /* Шар градієнту на базі RGBA (Надійна альтернатива multiply) */
+        /* Gradient Overlay (Above canvas, below text, ensures readability) */
         .gradient-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 2; /* Поверх канвасу */
-            
-            /* Плавне кінематографічне затемнення зліва направо */
-            background: linear-gradient(to right, 
-                rgba(0, 0, 0, 0.75) 0%, 
-                rgba(0, 0, 0, 0.5) 30%, 
-                rgba(0, 0, 0, 0) 65%
+            z-index: 2; 
+            background: linear-gradient(to top, 
+                rgba(0, 0, 0, 0.85) 0%, 
+                rgba(0, 0, 0, 0.5) 20%, 
+                rgba(0, 0, 0, 0) 45%
             );
-            pointer-events: none; /* Пропускає кліки миші на 3D модель */
+            pointer-events: none; 
         }
 
-        /* Текстовий блок (Самий верх) */
+        /* Text/Content Layer (Top layer) */
         .hero-content-layer {
             position: relative;
             z-index: 3; 
-            max-width: 550px;
+            max-width: 650px; /* Slightly wider for better centering balance */
             pointer-events: none; 
+            text-align: center; /* Center text content for standard centered layout */
         }
 
         .hero-content-layer h1 {
@@ -109,60 +108,98 @@
             transform: scale(0.98);
         }
 
-        /* Стилі для завантажувального екрану */
-#loader-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #121212; /* Колір під колір твоєї глини без текстури */
-    z-index: 9999; /* Понад усім */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
+        /* LOADING SCREEN */
+        #loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #121212; 
+            z-index: 9999; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
 
-.loader-spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    border-top-color: #0071e3; /* Твій синій фірмовий колір кнопки */
-    animation: spin 1s ease-in-out infinite;
-    margin-bottom: 20px;
-}
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #0071e3; 
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
 
-#loader-text {
-    color: #ffffff;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 400;
-}
+        #loader-text {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-/* Клас для плавного зникнення */
-#loader-overlay.fade-out {
-    opacity: 0;
-    visibility: hidden;
-}
+        #loader-overlay.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
 
+        /* ==========================================
+           RESPONSIVE STYLES FOR MOBILE (Smartphones)
+           ========================================== */
+        @media (max-width: 768px) {
+            .hero-container {
+                padding: 0 24px 40px 24px; /* Reduce padding on mobile */
+            }
 
+            /* Make the gradient higher so text doesn't blend with 3D on small screens */
+            .gradient-overlay {
+                background: linear-gradient(to top, 
+                rgba(0, 0, 0, 0.85) 0%, 
+                rgba(0, 0, 0, 0.5) 20%, 
+                rgba(0, 0, 0, 0) 45%
+            );
+            }
 
+            .hero-content-layer {
+                max-width: 100%; /* Text spans full width of mobile container */
+                display: flex;
+                flex-direction: column;
+                align-items: center; /* Center button horizontally */
+            }
+
+            .hero-content-layer h1 {
+                font-size: 2.2rem; /* Smaller font so it doesn't break poorly */
+                margin: 0 0 10px 0;
+            }
+
+            .hero-content-layer p {
+                font-size: 0.95rem; /* Compact description */
+                margin: 0 0 24px 0;
+            }
+
+            .interactive-btn {
+                width: 100%; /* Full width button - easy to click with thumb */
+                max-width: 320px; /* Prevents button from getting too stretched */
+                text-align: center;
+                box-sizing: border-box;
+                padding: 16px 24px; /* Thicker and better for touch */
+            }
+        }
     </style>
-  <script type="module" crossorigin src="https://lorg1996.github.io/map-tiles-storage/assets/index-xD4cPK9m.js"></script>
+  <script type="module" crossorigin src="/map-tiles-storage/assets/index-iZuIHeHH.js"></script>
 </head>
 <body>
 
     <div id="loader-overlay">
-    <div class="loader-spinner"></div>
-    <div id="loader-text">Loading 3D Scene... 0%</div>
-</div>
+        <div class="loader-spinner"></div>
+        <div id="loader-text">Loading 3D Scene... 0%</div>
+    </div>
 
     <div class="hero-container">
         
@@ -170,12 +207,16 @@
         
         <div class="gradient-overlay"></div>
 
-        <div class="hero-content-layer">
-            <h1>Chilipad Systems</h1>
-            <p>Experience the ultimate cooling mattress topper technology. Fully interactive 3D view.</p>
-            <a href="https://sleep.me" target="_blank" class="interactive-btn">Shop Now</a>
-        </div>
+         <div class="hero-content-layer">
 
+            <h1>Forest Exterior</h1>
+
+            <p>Hello. This scene was maded with Blender.</p>
+
+            <a href="https://www.blender.org/download/" target="_blank" class="interactive-btn">Download Blender</a>
+
+        </div> 
+        
     </div>
 
 </body>

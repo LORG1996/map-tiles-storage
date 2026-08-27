@@ -43,29 +43,23 @@
     </div>
 
     <script>
-        // Читаємо параметр town із URL
         const urlParams = new URLSearchParams(window.location.search);
         let town = urlParams.get('town');
 
-        // Якщо параметр взагалі відсутній, ставимо дефолт
         if (!town || town.trim() === "") {
             town = 'berezhnytsia';
         }
 
-        // Очищаємо від зайвих пробілів і переводимо в нижній регістр (для безпеки)
         town = town.trim().toLowerCase();
 
-        // Формуємо посилання
+        // Чиста схема без зайвих підшляхів для надійного парсингу в Capacitor
         const appSchema = `jwmaps://?town=${encodeURIComponent(town)}`;
 
-        // Виводимо на екран, щоб бачити, що саме передалося
         document.getElementById('status').innerText = `Територія: ${town}`;
 
-        // Прив'язуємо до кнопки
         const btn = document.getElementById('open-btn');
         btn.setAttribute('href', appSchema);
 
-        // Авто-перенаправлення у додаток
         setTimeout(() => {
             window.location.replace(appSchema);
         }, 400);

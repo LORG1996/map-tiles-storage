@@ -8,7 +8,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             text-align: center;
-            padding: 50px 20px;
+            padding: 60px 20px;
             background: #f8fafc;
             color: #1e293b;
         }
@@ -24,35 +24,51 @@
             display: inline-block;
             background: #2563eb;
             color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 14px 28px;
+            border-radius: 10px;
             text-decoration: none;
             font-weight: bold;
+            font-size: 16px;
             margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
     </style>
 </head>
 <body>
     <div class="card">
         <h3>📍 jwmaps</h3>
-        <p id="status">Відкриваємо територію в додатку...</p>
-        <a id="open-btn" class="btn" href="#">Відкрити вручну</a>
+        <p id="status" style="color: #64748b; font-weight: bold;">Зчитування території...</p>
+        
+        <a id="open-btn" class="btn" href="#">Відкрити у додатку</a>
     </div>
 
     <script>
-        // Читаємо назву села з URL (наприклад: ?town=berezhnytsia)
+        // Читаємо параметр town із URL
         const urlParams = new URLSearchParams(window.location.search);
-        const town = urlParams.get('town') || 'berezhnytsia';
+        let town = urlParams.get('town');
 
-        // Формуємо глибоке посилання на додаток
-        const appSchema = `jwmaps://open?town=${town}`;
+        // Якщо параметр взагалі відсутній, ставимо дефолт
+        if (!town || town.trim() === "") {
+            town = 'berezhnytsia';
+        }
 
-        // Оновлюємо кнопку для ручного натискання
-        document.getElementById('open-btn').setAttribute('href', appSchema);
-        document.getElementById('status').innerText = `Перенаправляємо на територію: ${town}`;
+        // Очищаємо від зайвих пробілів і переводимо в нижній регістр (для безпеки)
+        town = town.trim().toLowerCase();
 
-        // Автоматичний редирект у додаток
-        window.location.href = appSchema;
+        // Формуємо посилання
+        const appSchema = `jwmaps://open?town=${encodeURIComponent(town)}`;
+
+        // Виводимо на екран, щоб бачити, що саме передалося
+        document.getElementById('status').innerText = `Територія: ${town}`;
+
+        // Прив'язуємо до кнопки
+        const btn = document.getElementById('open-btn');
+        btn.setAttribute('href', appSchema);
+
+        // Авто-перенаправлення у додаток
+        setTimeout(() => {
+            window.location.replace(appSchema);
+        }, 400);
     </script>
 </body>
 </html>

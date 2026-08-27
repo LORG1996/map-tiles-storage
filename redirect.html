@@ -24,21 +24,29 @@
             display: inline-block;
             background: #2563eb;
             color: white;
-            padding: 14px 28px;
-            border-radius: 10px;
+            padding: 16px 32px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
             margin-top: 20px;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+            border: none;
+        }
+        .btn:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
 <body>
     <div class="card">
         <h3>📍 jwmaps</h3>
-        <p id="status" style="color: #64748b; font-weight: bold;">Зчитування території...</p>
+        <p id="status" style="color: #64748b; font-weight: bold; font-size: 16px; margin-bottom: 20px;">Завантаження території...</p>
         
+        <!-- Робимо кнопку основною дією, яку легко натиснути -->
         <a id="open-btn" class="btn" href="#">Відкрити у додатку</a>
     </div>
 
@@ -52,17 +60,27 @@
 
         town = town.trim().toLowerCase();
 
-        // Чиста схема без зайвих підшляхів для надійного парсингу в Capacitor
         const appSchema = `jwmaps://?town=${encodeURIComponent(town)}`;
 
+        // Показуємо назву території користувачу
         document.getElementById('status').innerText = `Територія: ${town}`;
 
         const btn = document.getElementById('open-btn');
         btn.setAttribute('href', appSchema);
 
-        setTimeout(() => {
-            window.location.replace(appSchema);
-        }, 400);
+        // Робимо так, щоб при кліку на будь-яке місце або саму кнопку редирект спрацьовував на 100%
+        btn.onclick = function(e) {
+            // Даємо браузеру зрозуміти, що це пряма дія користувача
+            window.location.href = appSchema;
+        };
+
+        // Робимо плавня спробу авто-переходу (якщо браузер дозволить)
+        window.onload = function() {
+            setTimeout(() => {
+                // Використовуємо location.href замість replace, це іноді краще сприймається WebView
+                window.location.href = appSchema;
+            }, 300);
+        };
     </script>
 </body>
 </html>

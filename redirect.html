@@ -1,86 +1,90 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <title>Перенаправлення у jwmaps...</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Відкриття jwmaps...</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
             text-align: center;
-            padding: 60px 20px;
-            background: #f8fafc;
-            color: #1e293b;
+            padding: 20px;
         }
         .card {
-            background: white;
+            background: #1e293b;
             padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-            max-width: 400px;
-            margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 340px;
+            width: 100%;
         }
+        h2 { margin-top: 0; font-size: 20px; }
+        p { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
         .btn {
-            display: inline-block;
+            display: block;
             background: #2563eb;
             color: white;
-            padding: 16px 32px;
-            border-radius: 12px;
             text-decoration: none;
+            padding: 14px;
+            border-radius: 10px;
             font-weight: bold;
-            font-size: 18px;
-            margin-top: 20px;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
             box-sizing: border-box;
-            cursor: pointer;
-            border: none;
         }
-        .btn:active {
-            transform: scale(0.98);
-        }
+        .btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h3>📍 jwmaps</h3>
-        <p id="status" style="color: #64748b; font-weight: bold; font-size: 16px; margin-bottom: 20px;">Завантаження території...</p>
-        
-        <!-- Робимо кнопку основною дією, яку легко натиснути -->
-        <a id="open-btn" class="btn" href="#">Відкрити у додатку</a>
-    </div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        let town = urlParams.get('town');
+<div class="card">
+    <h2>📍 Перехід до території</h2>
+    <p id="info-text">Зачекайте, відкриваємо додаток...</p>
+    
+    <!-- Ручна кнопка рятує, якщо мобільний браузер блокує автоматичний редирект -->
+    <a id="open-app-btn" href="#" class="btn">Відкрити в додатку</a>
+</div>
 
-        if (!town || town.trim() === "") {
-            town = 'berezhnytsia';
+<script>
+    // Отримуємо параметр town з URL (наприклад, ?town=dubravka)
+    const urlParams = new URLSearchParams(window.location.search);
+    const town = urlParams.get('town') || 'berezhnytsia';
+
+    const infoText = document.getElementById('info-text');
+    const openAppBtn = document.getElementById('open-app-btn');
+
+    infoText.innerText = `Територія: ${town}`;
+
+    const isAndroid = /android/i.test(navigator.userAgent);
+    let finalRedirectUrl = `jwmaps://?town=${encodeURIComponent(town)}`;
+
+    if (isAndroid) {
+        // Використовуємо ваш реальний appId з capacitor.config.json: com.sasha.jwmaps
+        const packageName = "com.sasha.jwmaps"; 
+        finalRedirectUrl = `intent://?town=${encodeURIComponent(town)}#Intent;scheme=jwmaps;package=${packageName};end`;
+    }
+
+    // Прив'язуємо посилання до кнопки
+    openAppBtn.href = finalRedirectUrl;
+
+    // Пробуємо зробити автоматичний редирект
+    setTimeout(() => {
+        try {
+            window.location.href = finalRedirectUrl;
+        } catch (e) {
+            console.log("Автоматичний редирект заблоковано:", e);
         }
+    }, 400);
+</script>
 
-        town = town.trim().toLowerCase();
-
-        const appSchema = `jwmaps://?town=${encodeURIComponent(town)}`;
-
-        // Показуємо назву території користувачу
-        document.getElementById('status').innerText = `Територія: ${town}`;
-
-        const btn = document.getElementById('open-btn');
-        btn.setAttribute('href', appSchema);
-
-        // Робимо так, щоб при кліку на будь-яке місце або саму кнопку редирект спрацьовував на 100%
-        btn.onclick = function(e) {
-            // Даємо браузеру зрозуміти, що це пряма дія користувача
-            window.location.href = appSchema;
-        };
-
-        // Робимо плавня спробу авто-переходу (якщо браузер дозволить)
-        window.onload = function() {
-            setTimeout(() => {
-                // Використовуємо location.href замість replace, це іноді краще сприймається WebView
-                window.location.href = appSchema;
-            }, 300);
-        };
-    </script>
 </body>
 </html>

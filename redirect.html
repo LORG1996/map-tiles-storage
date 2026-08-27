@@ -35,34 +35,23 @@
 <body>
     <div class="card">
         <h3>📍 jwmaps</h3>
-        <p id="status">Відкриваємо карту в додатку...</p>
+        <p id="status">Відкриваємо територію в додатку...</p>
         <a id="open-btn" class="btn" href="#">Відкрити вручну</a>
     </div>
 
     <script>
-        // Читаємо параметри з посилання (наприклад: ?town=berezhnytsia&lat=49.3&lng=24.1)
+        // Читаємо назву села з URL (наприклад: ?town=berezhnytsia)
         const urlParams = new URLSearchParams(window.location.search);
         const town = urlParams.get('town') || 'berezhnytsia';
-        const lat = urlParams.get('lat');
-        const lng = urlParams.get('lng');
 
-        // Формуємо глибоке посилання на ваш додаток
-        let appSchema = `jwmaps://open?town=${town}`;
-        if (lat && lng) {
-            appSchema += `&lat=${lat}&lng=${lng}`;
-        }
+        // Формуємо глибоке посилання на додаток
+        const appSchema = `jwmaps://open?town=${town}`;
 
-        // Оновлюємо кнопку для ручного натискання, якщо авто-редирект заблокується
+        // Оновлюємо кнопку для ручного натискання
         document.getElementById('open-btn').setAttribute('href', appSchema);
+        document.getElementById('status').innerText = `Перенаправляємо на територію: ${town}`;
 
-        // Спеціальний блок для відображення деталізованої інформації
-        if (lat && lng) {
-            document.getElementById('status').innerText = `Перенаправляємо на територію: ${town} (мітка)`;
-        } else {
-            document.getElementById('status').innerText = `Перенаправляємо на територію: ${town}`;
-        }
-
-        // Автоматичний редирект одразу після завантаження сторінки
+        // Автоматичний редирект у додаток
         window.location.href = appSchema;
     </script>
 </body>

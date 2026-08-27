@@ -56,7 +56,7 @@
         town = town.trim().toLowerCase();
 
         // Формуємо посилання
-        const appSchema = `jwmaps://open?town=${encodeURIComponent(town)}`;
+        const appSchema = `jwmaps://?town=${encodeURIComponent(town)}`;
 
         // Виводимо на екран, щоб бачити, що саме передалося
         document.getElementById('status').innerText = `Територія: ${town}`;

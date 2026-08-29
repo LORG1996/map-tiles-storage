@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <title>Перенаправлення на територію...</title>
+    <script>
+        // Миттєво зчитуємо поточні параметри (наприклад, ?town=zhuravno)
+        const searchParams = window.location.search;
+        
+        // Формуємо посилання на головну сторінку додатка зберігши параметри
+        const targetUrl = 'index.html' + searchParams;
+
+        // Виконуємо редірект
+        window.location.replace(targetUrl);
+    </script>
+</head>
+<body>
+    <p style="text-align: center; margin-top: 20vh; font-family: sans-serif;">
+        Відкриваємо територію на карті...
+    </p>
+</body>
+</html>

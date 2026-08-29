@@ -5,7 +5,7 @@
       {
         "appID": "828ADW254X.com.jwmaps.app----",
         "paths": [
-          "/map-tiles-storage/redirect.html*"
+          "redirect.html*"
         ]
       }
     ]

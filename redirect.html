@@ -1,68 +1,22 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Відкриття jwmaps...</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            text-align: center;
-            padding: 60px 20px;
-            background: #f8fafc;
-            color: #1e293b;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        .btn {
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            padding: 14px 28px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 16px;
-            margin-top: 20px;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-    </style>
+    <meta charset="utf-8">
+    <title>Перенаправлення на територію...</title>
+    <script>
+        // Миттєво зчитуємо поточні параметри (наприклад, ?town=zhuravno)
+        const searchParams = window.location.search;
+        
+        // Формуємо посилання на головну сторінку додатка зберігши параметри
+        const targetUrl = 'index.html' + searchParams;
+
+        // Виконуємо редірект
+        window.location.replace(targetUrl);
+    </script>
 </head>
 <body>
-    <div class="card">
-        <h3>📍 jwmaps</h3>
-        <p id="status" style="color: #64748b; font-weight: bold;">Зчитування території...</p>
-        
-        <a id="open-btn" class="btn" href="#">Відкрити у додатку</a>
-    </div>
-
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        let town = urlParams.get('town');
-
-        if (!town || town.trim() === "") {
-            town = 'berezhnytsia';
-        }
-
-        town = town.trim().toLowerCase();
-
-        // Чиста схема без зайвих підшляхів для надійного парсингу в Capacitor
-        const appSchema = `jwmaps://?town=${encodeURIComponent(town)}`;
-
-        document.getElementById('status').innerText = `Територія: ${town}`;
-
-        const btn = document.getElementById('open-btn');
-        btn.setAttribute('href', appSchema);
-
-        setTimeout(() => {
-            window.location.replace(appSchema);
-        }, 400);
-    </script>
+    <p style="text-align: center; margin-top: 20vh; font-family: sans-serif;">
+        Відкриваємо територію на карті...
+    </p>
 </body>
 </html>

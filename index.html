@@ -1,22 +1,182 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Перенаправлення на територію...</title>
-    <script>
-        // Миттєво зчитуємо поточні параметри (наприклад, ?town=zhuravno)
-        const searchParams = window.location.search;
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chilipad 3D View</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff; /* Темний бекграунд пасує до Clay режиму */
+            overflow: hidden;
+        }
         
-        // Формуємо посилання на головну сторінку додатка зберігши параметри
-        const targetUrl = 'index.html' + searchParams;
+        /* ГОЛОВНИЙ КОНТЕЙНЕР */
+        .hero-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center; 
+            padding: 0 10%;
+            
+            box-sizing: border-box;
+        }
 
-        // Виконуємо редірект
-        window.location.replace(targetUrl);
-    </script>
+        /* 3D Canvas (Самий низ) */
+        #product-3d-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 1;
+            display: block;
+        }
+
+        /* Шар градієнту на базі RGBA (Надійна альтернатива multiply) */
+        .gradient-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2; /* Поверх канвасу */
+            
+            /* Плавне кінематографічне затемнення зліва направо */
+            background: linear-gradient(to right, 
+                rgba(0, 0, 0, 0.75) 0%, 
+                rgba(0, 0, 0, 0.5) 30%, 
+                rgba(0, 0, 0, 0) 65%
+            );
+            pointer-events: none; /* Пропускає кліки миші на 3D модель */
+        }
+
+        /* Текстовий блок (Самий верх) */
+        .hero-content-layer {
+            position: relative;
+            z-index: 3; 
+            max-width: 550px;
+            pointer-events: none; 
+        }
+
+        .hero-content-layer h1 {
+            color: #ffffff; 
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 0 0 15px 0;
+            line-height: 1.1;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5); 
+        }
+
+        .hero-content-layer p {
+            color: #e4e4e7; 
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin: 0 0 30px 0;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+        }
+        
+        .interactive-btn {
+            pointer-events: auto;
+            display: inline-block;
+            background: #0071e3;
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+        .interactive-btn:hover {
+            background: #0077ed;
+        }
+        
+        .interactive-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Стилі для завантажувального екрану */
+#loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #121212; /* Колір під колір твоєї глини без текстури */
+    z-index: 9999; /* Понад усім */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.loader-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #0071e3; /* Твій синій фірмовий колір кнопки */
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 20px;
+}
+
+#loader-text {
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Клас для плавного зникнення */
+#loader-overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+
+
+    </style>
+  <script type="module" crossorigin src="assets/index-B6tXvPk9.js"></script>
 </head>
 <body>
-    <p style="text-align: center; margin-top: 20vh; font-family: sans-serif;">
-        Відкриваємо територію на карті...
-    </p>
+
+    <div id="loader-overlay">
+    <div class="loader-spinner"></div>
+    <div id="loader-text">Loading 3D Scene... 0%</div>
+</div>
+
+    <div class="hero-container">
+        
+        <canvas id="product-3d-canvas"></canvas>
+        
+        <div class="gradient-overlay"></div>
+
+        <div class="hero-content-layer">
+            <h1>Chilipad Systems</h1>
+            <p>Experience the ultimate cooling mattress topper technology. Fully interactive 3D view.</p>
+            <a href="https://sleep.me" target="_blank" class="interactive-btn">Shop Now</a>
+        </div>
+
+    </div>
+
 </body>
 </html>

@@ -27,6 +27,56 @@
          z-index: 0; 
        } 
 
+       /* Екран завантаження */ 
+       #loader-screen { 
+         position: fixed; 
+         inset: 0; 
+         background: #232845; 
+         z-index: 100; 
+         display: flex; 
+         flex-direction: column; 
+         justify-content: center; 
+         align-items: center; 
+         gap: 20px; 
+         transition: opacity 0.8s ease, visibility 0.8s ease; 
+       } 
+
+       #loader-screen.hidden { 
+         opacity: 0; 
+         visibility: hidden; 
+         pointer-events: none; 
+       } 
+
+       .loader-title { 
+         color: #ffffff; 
+         font-size: 1.1rem; 
+         font-weight: 600; 
+         letter-spacing: 3px; 
+         text-transform: uppercase; 
+       } 
+
+       .loader-progress-container { 
+         width: 220px; 
+         height: 4px; 
+         background: rgba(255, 255, 255, 0.1); 
+         border-radius: 2px; 
+         overflow: hidden; 
+       } 
+
+       .loader-progress-bar { 
+         width: 0%; 
+         height: 100%; 
+         background: #ffffff; 
+         transition: width 0.1s ease; 
+       } 
+
+       .loader-percentage { 
+         color: rgba(255, 255, 255, 0.6); 
+         font-size: 0.9rem; 
+         letter-spacing: 2px; 
+         font-variant-numeric: tabular-nums; 
+       } 
+
        /* Flex UI Overlay (шапка) */ 
        .ui-overlay { 
          position: relative; 
@@ -99,6 +149,15 @@
      </style> 
    </head> 
    <body> 
+     <!-- Екран завантаження з відсотками --> 
+     <div id="loader-screen"> 
+       <div class="loader-title">Loading Scene</div> 
+       <div class="loader-progress-container"> 
+         <div class="loader-progress-bar" id="loaderProgressBar"></div> 
+       </div> 
+       <div class="loader-percentage" id="loaderPercentage">0%</div> 
+     </div> 
+
      <div class="ui-overlay"> 
        <header> 
          <div class="logo">Sasha Liudkevych</div> 
@@ -130,6 +189,29 @@
        import { BokehPass } from "three/addons/postprocessing/BokehPass.js"; 
        import { OutputPass } from "three/addons/postprocessing/OutputPass.js"; 
        import * as CANNON from "cannon-es"; 
+
+       // Елементи інтерфейсу завантажувача
+       const loaderScreen = document.getElementById("loader-screen");
+       const loaderProgressBar = document.getElementById("loaderProgressBar");
+       const loaderPercentage = document.getElementById("loaderPercentage");
+
+       let loadedAssetsCount = 0;
+       const totalAssetsCount = 2; // Основний GLB файл та EXR середовище
+       let glbProgress = 0;
+       let exrProgress = 0;
+
+       function updateOverallProgress() {
+         // Розраховуємо загальний відсоток (GLB важить більше, тому дамо йому 80%, а EXR 20%)
+         const overall = Math.round(glbProgress * 0.8 + exrProgress * 0.2);
+         loaderProgressBar.style.width = overall + "%";
+         loaderPercentage.textContent = overall + "%";
+
+         if (overall >= 100) {
+           setTimeout(() => {
+             loaderScreen.classList.add("hidden");
+           }, 400);
+         }
+       }
 
        // Сцена 
        const scene = new THREE.Scene(); 
@@ -320,10 +402,20 @@
 
            texture.dispose(); 
            pmremGenerator.dispose(); 
+
+           exrProgress = 100;
+           updateOverallProgress();
          }, 
-         undefined, 
+         (xhr) => {
+           if (xhr.total) {
+             exrProgress = Math.floor((xhr.loaded / xhr.total) * 100);
+             updateOverallProgress();
+           }
+         }, 
          (error) => { 
            console.error("Failed to load EXR environment map:", error); 
+           exrProgress = 100;
+           updateOverallProgress();
          } 
        ); 
 
@@ -385,7 +477,7 @@
          depthWrite: false      
        }); 
 
-       // Універсальний Clay матеріал типу MeshStandardMaterial (для всього об'єкта в Clay mode)
+       // Універсальний Clay матеріал типу MeshStandardMaterial
        const globalClayMaterial = new THREE.MeshStandardMaterial({
          color: 0x6e6e6e,
          roughness: 0.85,
@@ -394,7 +486,7 @@
        });
 
        let isClayMode = false; 
-       let clayMixFactor = 0.0; // Значення від 0 (звичайний режим) до 1 (Clay Mode) для плавного переходу
+       let clayMixFactor = 0.0; 
        const meshOriginalMaterials = new Map(); 
        const meshClayMaterials = new Map(); 
 
@@ -433,7 +525,6 @@
                  allLoadedMeshes.push(child); 
                  let assignedMaterial; 
                  
-                 // Створюємо окремий MeshStandardMaterial для кожного елемента (щоб зберігати налаштування двосторонності та відтінків)
                  let clayMat = new THREE.MeshStandardMaterial({
                    color: 0x6e6e6e,
                    roughness: 0.85,
@@ -524,10 +615,19 @@
            }); 
 
            scene.add(gltf.scene); 
+           glbProgress = 100;
+           updateOverallProgress();
          }, 
-         undefined, 
+         (xhr) => {
+           if (xhr.total) {
+             glbProgress = Math.floor((xhr.loaded / xhr.total) * 100);
+             updateOverallProgress();
+           }
+         }, 
          (error) => { 
            console.error("Failed to load GLB:", error); 
+           glbProgress = 100;
+           updateOverallProgress();
          } 
        ); 
 
@@ -555,7 +655,6 @@
          requestAnimationFrame(animate); 
          controls.update(); 
 
-         // Плавний перехід між звичайним режимом та MeshStandard Clay Mode туди і назад
          const targetMix = isClayMode ? 1.0 : 0.0;
          clayMixFactor = THREE.MathUtils.lerp(clayMixFactor, targetMix, 0.06);
 

@@ -149,7 +149,6 @@
      </style> 
    </head> 
    <body> 
-     <!-- Екран завантаження з відсотками --> 
      <div id="loader-screen"> 
        <div class="loader-title">Loading Scene</div> 
        <div class="loader-progress-container"> 
@@ -186,7 +185,6 @@
        import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js"; 
        import { RenderPass } from "three/addons/postprocessing/RenderPass.js"; 
        import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"; 
-       import { BokehPass } from "three/addons/postprocessing/BokehPass.js"; 
        import { OutputPass } from "three/addons/postprocessing/OutputPass.js"; 
        import * as CANNON from "cannon-es"; 
 
@@ -195,13 +193,10 @@
        const loaderProgressBar = document.getElementById("loaderProgressBar");
        const loaderPercentage = document.getElementById("loaderPercentage");
 
-       let loadedAssetsCount = 0;
-       const totalAssetsCount = 2; // Основний GLB файл та EXR середовище
        let glbProgress = 0;
        let exrProgress = 0;
 
        function updateOverallProgress() {
-         // Розраховуємо загальний відсоток (GLB важить більше, тому дамо йому 80%, а EXR 20%)
          const overall = Math.round(glbProgress * 0.8 + exrProgress * 0.2);
          loaderProgressBar.style.width = overall + "%";
          loaderPercentage.textContent = overall + "%";
@@ -327,31 +322,10 @@
        const allLoadedMeshes = []; 
        const mouse = new THREE.Vector2(-1000, -1000); 
        const tempVector = new THREE.Vector3(); 
-       const raycaster = new THREE.Raycaster(); 
 
        window.addEventListener("mousemove", (event) => { 
          mouse.x = (event.clientX / window.innerWidth) * 2 - 1; 
          mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; 
-       }); 
-
-       let targetFocusDistance = camera.position.distanceTo(new THREE.Vector3(1.90, 2.04, -1.95)); 
-
-       window.addEventListener("click", (event) => { 
-         if (event.target.closest("header")) return; 
-
-         const clickMouse = new THREE.Vector2(); 
-         clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1; 
-         clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1; 
-
-         raycaster.setFromCamera(clickMouse, camera); 
-         const intersects = raycaster.intersectObjects(allLoadedMeshes, true); 
-
-         if (intersects.length > 0) { 
-           const hitPoint = intersects[0].point; 
-           targetFocusDistance = camera.position.distanceTo(hitPoint); 
-         } else { 
-           targetFocusDistance = camera.position.distanceTo(controls.target); 
-         } 
        }); 
 
        // Контроли 
@@ -360,7 +334,7 @@
        controls.target.set(1.90, 2.04, -1.95); 
        controls.update(); 
 
-       // Постобробка 
+       // Постобробка (DOF повністю видалено за запитом)
        const composer = new EffectComposer(renderer); 
        const renderPass = new RenderPass(scene, camera); 
        composer.addPass(renderPass); 
@@ -372,15 +346,6 @@
          0.75   
        ); 
        composer.addPass(bloomPass); 
-
-       const bokehPass = new BokehPass(scene, camera, { 
-         focus: targetFocusDistance, 
-         aperture: 0.0005,  
-         maxblur: 0.005,    
-         width: window.innerWidth, 
-         height: window.innerHeight 
-       }); 
-       composer.addPass(bokehPass); 
 
        const outputPass = new OutputPass(); 
        composer.addPass(outputPass); 
@@ -668,12 +633,6 @@
              mesh.material = originalMat;
            }
          });
-
-         bokehPass.uniforms.focus.value = THREE.MathUtils.lerp( 
-           bokehPass.uniforms.focus.value, 
-           targetFocusDistance, 
-           0.1 
-         ); 
 
          const time = performance.now();
          const dt = (time - lastCallTime) / 1000;
